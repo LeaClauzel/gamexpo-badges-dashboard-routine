@@ -1,0 +1,911 @@
+<title>Suivi des badges — Gamexpo</title>
+<style>
+  :root {
+    --paper: #f5f7f9;
+    --surface: #ffffff;
+    --surface-2: #eef1f4;
+    --ink: #12161c;
+    --ink-muted: #5b6472;
+    --ink-faint: #8b93a0;
+    --line: #e2e7ec;
+    --line-strong: #c7ced7;
+    --baseline: #c7ced7;
+    --focus: #2a78d6;
+    --s1: #2a78d6; /* Mandrill */
+    --s2: #eb6834; /* Badge en ligne */
+    --s3: #1baf7a; /* GAM */
+    --s4: #eda100; /* Campagne partenaire */
+    --s5: #e87ba4; /* Mailchimp */
+    --s6: #008300; /* Salon CSE digital */
+    --s7: #4a3aa7; /* Autres */
+    --cat-1: #2a78d6; --cat-2: #eb6834; --cat-3: #1baf7a; --cat-4: #eda100;
+    --cat-5: #e87ba4; --cat-6: #008300; --cat-7: #4a3aa7; --cat-8: #e34948;
+    --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
+    --font-sans: ui-sans-serif, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --paper: #0e1116; --surface: #161a21; --surface-2: #1e232b;
+      --ink: #eef1f5; --ink-muted: #a8b0bd; --ink-faint: #6b7280;
+      --line: #262c35; --line-strong: #383f4a; --baseline: #383f4a;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+      --s5: #d55181; --s6: #008300; --s7: #9085e9;
+      --cat-1: #3987e5; --cat-2: #d95926; --cat-3: #199e70; --cat-4: #c98500;
+      --cat-5: #d55181; --cat-6: #008300; --cat-7: #9085e9; --cat-8: #e66767;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #0e1116; --surface: #161a21; --surface-2: #1e232b;
+    --ink: #eef1f5; --ink-muted: #a8b0bd; --ink-faint: #6b7280;
+    --line: #262c35; --line-strong: #383f4a; --baseline: #383f4a;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    --s5: #d55181; --s6: #008300; --s7: #9085e9;
+    --cat-1: #3987e5; --cat-2: #d95926; --cat-3: #199e70; --cat-4: #c98500;
+    --cat-5: #d55181; --cat-6: #008300; --cat-7: #9085e9; --cat-8: #e66767;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --paper: #f5f7f9; --surface: #ffffff; --surface-2: #eef1f4;
+    --ink: #12161c; --ink-muted: #5b6472; --ink-faint: #8b93a0;
+    --line: #e2e7ec; --line-strong: #c7ced7; --baseline: #c7ced7;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .app {
+    font-family: var(--font-sans);
+    background: var(--paper);
+    color: var(--ink);
+    padding: 28px clamp(16px, 4vw, 44px) 72px;
+    max-width: 1360px;
+    margin: 0 auto;
+  }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.09em;
+    text-transform: uppercase; color: var(--ink-faint); margin: 0 0 8px;
+  }
+  h1 { font-size: clamp(22px, 2.4vw, 27px); font-weight: 650; letter-spacing: -0.01em; margin: 0 0 8px; text-wrap: balance; }
+  .lede { font-size: 14.5px; line-height: 1.6; color: var(--ink-muted); max-width: 72ch; margin: 0 0 6px; }
+  .snapshot-note {
+    font-size: 12.5px; color: var(--ink-faint); font-family: var(--font-mono);
+    margin: 0 0 22px;
+  }
+
+  /* KPI row */
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  @media (max-width: 860px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
+    padding: 14px 16px;
+  }
+  .kpi-label { font-size: 11.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .kpi-value { font-size: 24px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .kpi-sub { font-size: 12px; color: var(--ink-muted); margin-top: 3px; }
+
+  section.panel {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
+    padding: 20px; margin-bottom: 22px;
+  }
+  .panel-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
+  .panel-title { font-size: 16px; font-weight: 650; margin: 0; }
+  .panel-sub { font-size: 13px; color: var(--ink-muted); margin: 0 0 16px; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 18px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.04em; }
+  select {
+    font-family: var(--font-sans); font-size: 13px; color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line-strong); border-radius: var(--radius-sm); padding: 7px 10px; cursor: pointer;
+    min-width: 200px;
+  }
+  .segmented {
+    display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; overflow: hidden;
+    font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+  }
+  .segmented button {
+    border: none; background: var(--surface); color: var(--ink-muted); padding: 7px 14px; cursor: pointer;
+  }
+  .segmented button + button { border-left: 1px solid var(--line-strong); }
+  .segmented button.active { background: var(--focus); color: #fff; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-muted); }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .legend-line { width: 14px; height: 2px; border-radius: 2px; flex-shrink: 0; }
+
+  svg { display: block; overflow: visible; }
+  .gridline { stroke: var(--line); stroke-width: 1; }
+  .baseline-line { stroke: var(--baseline); stroke-width: 1; }
+  .axis-label { fill: var(--ink-faint); font-size: 10.5px; font-family: var(--font-sans); }
+  .chart-wrap { position: relative; width: 100%; }
+  .chart-scroll { overflow-x: auto; }
+  .tooltip {
+    position: absolute; pointer-events: none; background: var(--ink); color: var(--surface);
+    font-size: 12px; padding: 8px 10px; border-radius: 8px; line-height: 1.55;
+    white-space: nowrap; opacity: 0; transform: translate(-50%, -100%); transition: opacity 0.1s; z-index: 5;
+  }
+  .tooltip b { font-weight: 650; }
+  .crosshair { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0; }
+
+  .edition-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .edition-chip {
+    display: flex; align-items: center; gap: 7px;
+    border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 12px 5px 8px;
+    font-size: 12.5px; cursor: pointer; background: var(--surface); color: var(--ink-muted);
+    user-select: none;
+  }
+  .edition-chip input { accent-color: var(--focus); margin: 0; }
+  .edition-chip.on { background: var(--surface-2); color: var(--ink); border-color: var(--line-strong); font-weight: 600; }
+  .edition-chip .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .edition-chip.disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .callout {
+    display: flex; gap: 10px; padding: 12px 14px; background: var(--surface-2);
+    border: 1px solid var(--line); border-radius: var(--radius-md); font-size: 12.5px;
+    line-height: 1.6; color: var(--ink-muted); margin-top: 14px;
+  }
+  .callout b { color: var(--ink); font-weight: 600; }
+
+  details.table-toggle { margin-top: 14px; }
+  details.table-toggle summary { cursor: pointer; font-size: 12.5px; color: var(--ink-muted); }
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 10px; }
+  table.data-table th, table.data-table td {
+    text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  table.data-table th:first-child, table.data-table td:first-child { text-align: left; }
+  table.data-table th { color: var(--ink-faint); font-weight: 600; }
+  .table-scroll { overflow-x: auto; }
+
+  footer.methodology {
+    font-size: 12.5px; line-height: 1.7; color: var(--ink-muted);
+  }
+  footer.methodology h3 { font-size: 13px; color: var(--ink); margin: 0 0 8px; }
+  footer.methodology ul { margin: 0; padding-left: 18px; }
+  footer.methodology li { margin-bottom: 6px; }
+  footer.methodology code { font-family: var(--font-mono); font-size: 11.5px; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+</style>
+
+<div class="app">
+  <p class="eyebrow">Gamexpo · Suivi opérationnel</p>
+  <h1>Création de badges visiteurs</h1>
+  <p class="lede">
+    Volume de badges créés dans le temps, par salon et par canal de création, avec comparaison
+    des éditions précédentes d'une même ville alignées sur le nombre de jours avant l'ouverture.
+  </p>
+  <p class="snapshot-note" id="snapshot-note"></p>
+
+  <div class="kpi-row" id="kpi-row"></div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Vue chronologique</h2>
+    </div>
+    <p class="panel-sub">Badges créés pour un salon donné (ou tout un semestre), répartis par canal de création.</p>
+
+    <div class="controls">
+      <div class="field">
+        <label>Portée</label>
+        <div class="segmented" id="scope-toggle">
+          <button type="button" data-scope="event" class="active">Un salon</button>
+          <button type="button" data-scope="semester">Tout un semestre</button>
+        </div>
+      </div>
+      <div class="field" id="field-sel-event">
+        <label for="sel-event">Salon</label>
+        <select id="sel-event"></select>
+      </div>
+      <div class="field" id="field-sel-semester" style="display:none;">
+        <label for="sel-semester">Semestre</label>
+        <select id="sel-semester"></select>
+      </div>
+      <div class="field">
+        <label>Granularité</label>
+        <div class="segmented" id="granularity-toggle">
+          <button type="button" data-g="day" class="active">Jour</button>
+          <button type="button" data-g="week">Semaine</button>
+          <button type="button" data-g="month">Mois</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Affichage</label>
+        <div class="segmented" id="display-toggle">
+          <button type="button" data-disp="period" class="active">Par période</button>
+          <button type="button" data-disp="cumulative">Cumulé</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend" id="legend-a"></div>
+    <div class="chart-wrap" id="chartA-wrap">
+      <div class="chart-scroll"><svg id="chartA" width="1280" height="320" viewBox="0 0 1280 320"></svg></div>
+      <div class="tooltip" id="tooltipA"></div>
+    </div>
+
+    <details class="table-toggle">
+      <summary>Voir les données en tableau</summary>
+      <div class="table-scroll">
+        <table class="data-table" id="tableA">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Comparaison entre éditions — même ville</h2>
+    </div>
+    <p class="panel-sub">
+      Courbes alignées sur le nombre de jours avant l'ouverture (0 = jour d'ouverture) pour comparer
+      le rythme de création de badges d'une édition à l'autre, dans une même ville.
+    </p>
+
+    <div class="controls">
+      <div class="field">
+        <label for="sel-city">Ville</label>
+        <select id="sel-city"></select>
+      </div>
+      <div class="field">
+        <label>Mesure</label>
+        <div class="segmented" id="metric-toggle">
+          <button type="button" data-m="cumulative" class="active">Cumulé</button>
+          <button type="button" data-m="daily">Quotidien</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Fenêtre</label>
+        <div class="segmented" id="window-toggle">
+          <button type="button" data-w="30">30 j</button>
+          <button type="button" data-w="60">60 j</button>
+          <button type="button" data-w="120" class="active">120 j</button>
+          <button type="button" data-w="9999">Tout</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="edition-picker" id="edition-picker"></div>
+
+    <div class="chart-wrap" id="chartB-wrap">
+      <div class="chart-scroll"><svg id="chartB" width="1280" height="360" viewBox="0 0 1280 360"></svg></div>
+      <div class="tooltip" id="tooltipB"></div>
+    </div>
+
+    <div class="callout">
+      <span>ℹ️</span>
+      <div>
+        <b>Lecture du graphique :</b> l'axe horizontal représente le nombre de jours avant (valeurs négatives)
+        ou après (valeurs positives) la date d'ouverture de chaque édition — 0 marque le jour J. Cela permet de
+        comparer des éditions à des dates calendaires différentes sur un même axe de préparation.
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2 class="panel-title">Comparaison des campagnes</h2>
+    </div>
+    <p class="panel-sub">
+      Performance de chaque campagne (Mandrill, Mailchimp, campagnes partenaires…) sur un semestre donné —
+      au global sur toutes les villes, ou pour une ville en particulier.
+    </p>
+
+    <div class="controls">
+      <div class="field">
+        <label for="sel-campaign-semester">Semestre</label>
+        <select id="sel-campaign-semester"></select>
+      </div>
+      <div class="field">
+        <label for="sel-campaign-scope">Ville</label>
+        <select id="sel-campaign-scope"></select>
+      </div>
+    </div>
+
+    <div class="legend" id="legend-campaigns"></div>
+    <div class="chart-wrap" id="chartC-wrap">
+      <div class="chart-scroll"><svg id="chartC" width="1280" height="520" viewBox="0 0 1280 520"></svg></div>
+      <div class="tooltip" id="tooltipC"></div>
+    </div>
+
+    <details class="table-toggle">
+      <summary>Voir toutes les campagnes en tableau</summary>
+      <div class="table-scroll">
+        <table class="data-table" id="tableC">
+          <thead><tr><th>Campagne</th><th>Famille</th><th>Badges</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <section class="panel">
+    <footer class="methodology">
+      <h3>Notes de méthode</h3>
+      <ul>
+        <li>Source : table <code>vis_badges</code>, rapprochée de <code>exp_evenements</code> sur l'identifiant de salon. Snapshot ponctuel, pas de rafraîchissement automatique.</li>
+        <li>La ville est déduite du nom du salon (les anciennes éditions n'ont pas toujours la colonne <code>ville</code> renseignée) — à vérifier en cas de salon mal classé. Le semestre (ex. 2026-2) est déduit du suffixe du nom du salon.</li>
+        <li>Le champ <code>origine</code> identifie la campagne/le canal à l'origine de la création du badge (plus de 800 campagnes distinctes une fois la ville retirée du nom). Elles sont regroupées ici en familles : <b>Mandrill</b> et <b>Mailchimp</b> sont les plateformes d'envoi d'emailing utilisées pour les campagnes de relance (ex. <code>man02</code>, <code>chimp09</code>), <b>GAM</b> le canal Gamexpo interne, <b>Campagne partenaire</b> les envois co-brandés avec des partenaires (Disneyland, ANCV, Illicado, Nigloland…), <b>Badge en ligne</b> la création directe/organique.</li>
+        <li><b>Autres</b> regroupe Call center, Site public, Web et Welcomités (chacun individuellement inférieur à 5&nbsp;000 badges sur l'historique). Le détail par campagne individuelle est disponible dans la section « Comparaison des campagnes ».</li>
+        <li>~1&nbsp;300 badges (≈0,6&nbsp;% du total) n'ont pas pu être rattachés à un salon ou une date valide et sont exclus de cette page.</li>
+      </ul>
+    </footer>
+  </section>
+</div>
+
+<script>
+const EVENTS = __EVENTS__;
+const DAILY = __DAILY__;
+const CATEGORY_CODES = __CATEGORIES__;
+const CAMPAIGNS = __CAMPAIGNS__;
+
+const TOP_CATS = ['M', 'B', 'G', 'X', 'C', 'S'];
+const CAT_COLOR = { M: 'var(--s1)', B: 'var(--s2)', G: 'var(--s3)', X: 'var(--s4)', C: 'var(--s5)', S: 'var(--s6)', OTHER: 'var(--s7)' };
+const CAT_LABEL = {};
+for (const [name, code] of Object.entries(CATEGORY_CODES)) CAT_LABEL[code] = name;
+CAT_LABEL.OTHER = 'Autres';
+const CAT_ORDER = [...TOP_CATS, 'OTHER'];
+
+function foldCat(code) { return TOP_CATS.includes(code) ? code : 'OTHER'; }
+function fmt(n) { return n.toLocaleString('fr-FR'); }
+
+function positionTooltip(tooltip, svg, wrap, svgX, svgY) {
+  const svgRect = svg.getBoundingClientRect();
+  const wrapRect = wrap.getBoundingClientRect();
+  const scale = svgRect.width / svg.viewBox.baseVal.width;
+  tooltip.style.left = (svgRect.left - wrapRect.left + svgX * scale) + 'px';
+  tooltip.style.top = (svgRect.top - wrapRect.top + svgY * scale) + 'px';
+}
+
+const eventById = {};
+EVENTS.forEach(e => { eventById[e.id] = e; });
+
+function eventDateFromOffset(event, offset) {
+  const d = new Date(event.date_debut + 'T00:00:00');
+  d.setDate(d.getDate() + offset);
+  return d;
+}
+function isoDate(d) { return d.toISOString().slice(0, 10); }
+function isoWeekStart(d) {
+  const day = (d.getDay() + 6) % 7;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() - day);
+  return isoDate(monday);
+}
+function monthKey(d) { return d.toISOString().slice(0, 7); }
+
+/* ---------------- KPI row ---------------- */
+function renderKPIs() {
+  const totalBadges = DAILY.reduce((a, r) => a + r.n, 0);
+  const nSalons = EVENTS.length;
+  const nVilles = new Set(EVENTS.map(e => e.ville).filter(Boolean)).size;
+  const sorted = [...EVENTS].sort((a, b) => b.date_debut.localeCompare(a.date_debut));
+  const mostRecent = sorted[0];
+  const mrCount = DAILY.filter(r => r.e === mostRecent.id).reduce((a, r) => a + r.n, 0);
+
+  const tiles = [
+    { label: 'Total badges (historique)', value: fmt(totalBadges), sub: `${nSalons} salons suivis` },
+    { label: 'Villes suivies', value: nVilles, sub: 'avec au moins 1 édition' },
+    { label: 'Édition la plus récente', value: mostRecent.nom, sub: mostRecent.date_debut, small: true },
+    { label: 'Badges — cette édition', value: fmt(mrCount), sub: 'toutes origines confondues' },
+  ];
+  document.getElementById('kpi-row').innerHTML = tiles.map(t => `
+    <div class="kpi">
+      <div class="kpi-label">${t.label}</div>
+      <div class="kpi-value" style="${t.small ? 'font-size:15px; line-height:1.3;' : ''}">${t.value}</div>
+      <div class="kpi-sub">${t.sub}</div>
+    </div>`).join('');
+}
+
+/* ---------------- View A: chronological ---------------- */
+let stateA = { scope: 'event', eventId: null, semesterId: null, granularity: 'day', display: 'period' };
+
+function populateEventSelect() {
+  const sel = document.getElementById('sel-event');
+  const sorted = [...EVENTS].sort((a, b) => b.date_debut.localeCompare(a.date_debut));
+  sel.innerHTML = sorted.map(e => `<option value="${e.id}">${e.nom} — ${e.date_debut}</option>`).join('');
+  stateA.eventId = sorted[0].id;
+  sel.value = stateA.eventId;
+  sel.addEventListener('change', () => { stateA.eventId = sel.value; renderChartA(); });
+}
+
+function populateSemesterSelect() {
+  const sel = document.getElementById('sel-semester');
+  const semesters = [...new Set(EVENTS.map(e => e.semestre).filter(Boolean))].sort().reverse();
+  sel.innerHTML = semesters.map(s => {
+    const count = EVENTS.filter(e => e.semestre === s).length;
+    return `<option value="${s}">${s} (${count} salons)</option>`;
+  }).join('');
+  stateA.semesterId = semesters[0];
+  sel.value = stateA.semesterId;
+  sel.addEventListener('change', () => { stateA.semesterId = sel.value; renderChartA(); });
+}
+
+function bucketKey(date, granularity) {
+  if (granularity === 'day') return isoDate(date);
+  if (granularity === 'week') return isoWeekStart(date);
+  return monthKey(date);
+}
+
+function computeSeriesA() {
+  const events = stateA.scope === 'event'
+    ? [eventById[stateA.eventId]]
+    : EVENTS.filter(e => e.semestre === stateA.semesterId);
+  const buckets = new Map();
+  events.forEach(event => {
+    if (!event) return;
+    DAILY.filter(r => r.e === event.id).forEach(r => {
+      const date = eventDateFromOffset(event, r.o);
+      const key = bucketKey(date, stateA.granularity);
+      if (!buckets.has(key)) buckets.set(key, {});
+      const cat = foldCat(r.c);
+      buckets.get(key)[cat] = (buckets.get(key)[cat] || 0) + r.n;
+    });
+  });
+  const keys = [...buckets.keys()].sort();
+  return keys.map(k => ({ key: k, cats: buckets.get(k) }));
+}
+
+function renderLegendA() {
+  document.getElementById('legend-a').innerHTML = CAT_ORDER.map(c => `
+    <div class="legend-item"><span class="legend-swatch" style="background:${CAT_COLOR[c]}"></span>${CAT_LABEL[c]}</div>
+  `).join('');
+}
+
+function renderChartA() {
+  const series = computeSeriesA();
+  const svg = document.getElementById('chartA');
+  const W = 1280, H = 320;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('width', W);
+  svg.innerHTML = '';
+  const padL = 50, padR = 16, padT = 14, padB = 34;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const n = series.length;
+  const tooltip = document.getElementById('tooltipA');
+
+  const ns = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs) { const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+  if (n === 0) { renderTableA(series); return; }
+
+  if (stateA.display === 'cumulative') {
+    // running cumulative total per category
+    const cum = series.map(() => ({}));
+    CAT_ORDER.forEach(c => {
+      let running = 0;
+      series.forEach((s, i) => { running += (s.cats[c] || 0); cum[i][c] = running; });
+    });
+    const yMax = Math.max(1, ...cum.map(row => CAT_ORDER.reduce((a, c) => a + row[c], 0))) * 1.08;
+    const x = i => padL + (n <= 1 ? plotW / 2 : (i / (n - 1)) * plotW);
+    const y = v => padT + plotH - (v / yMax) * plotH;
+
+    const ticks = 4;
+    for (let t = 0; t <= ticks; t++) {
+      const v = (t / ticks) * yMax;
+      const yy = y(v);
+      svg.appendChild(el('line', { x1: padL, x2: W - padR, y1: yy, y2: yy, class: 'gridline' }));
+      const lbl = el('text', { x: padL - 8, y: yy + 4, class: 'axis-label', 'text-anchor': 'end' });
+      lbl.textContent = fmt(Math.round(v));
+      svg.appendChild(lbl);
+    }
+    svg.appendChild(el('line', { x1: padL, x2: W - padR, y1: padT + plotH, y2: padT + plotH, class: 'baseline-line' }));
+
+    // stacked cumulative areas, drawn back-to-front so earlier (bottom) categories stay visible
+    [...CAT_ORDER].reverse().forEach(c => {
+      const idx = CAT_ORDER.indexOf(c);
+      const below = (i) => CAT_ORDER.slice(0, idx).reduce((a, cc) => a + cum[i][cc], 0);
+      let d = `M ${x(0)} ${y(below(0))} `;
+      for (let i = 0; i < n; i++) d += `L ${x(i)} ${y(below(i) + cum[i][c])} `;
+      for (let i = n - 1; i >= 0; i--) d += `L ${x(i)} ${y(below(i))} `;
+      d += 'Z';
+      svg.appendChild(el('path', { d, fill: CAT_COLOR[c], opacity: 0.88 }));
+    });
+
+    const labelEvery = Math.max(1, Math.ceil(n / (W / 70)));
+    series.forEach((s, i) => {
+      if (i % labelEvery === 0 || i === n - 1) {
+        const lbl = el('text', { x: x(i), y: H - 10, class: 'axis-label', 'text-anchor': 'middle' });
+        lbl.textContent = stateA.granularity === 'month' ? s.key : s.key.slice(5).replace('-', '/');
+        svg.appendChild(lbl);
+      }
+    });
+
+    const crosshair = el('line', { class: 'crosshair', y1: padT, y2: padT + plotH });
+    svg.appendChild(crosshair);
+    const hit = el('rect', { x: padL, y: padT, width: plotW, height: plotH, fill: 'transparent' });
+    hit.addEventListener('mousemove', (ev) => {
+      const rect = svg.getBoundingClientRect();
+      const mx = (ev.clientX - rect.left) * (W / rect.width);
+      let i = Math.round(((mx - padL) / plotW) * (n - 1));
+      i = Math.max(0, Math.min(n - 1, i));
+      crosshair.setAttribute('x1', x(i)); crosshair.setAttribute('x2', x(i)); crosshair.setAttribute('opacity', 1);
+      const total = CAT_ORDER.reduce((a, c) => a + cum[i][c], 0);
+      const lines = CAT_ORDER.filter(c => cum[i][c]).map(c => `${CAT_LABEL[c]} : ${fmt(cum[i][c])}`).join('<br>');
+      tooltip.style.opacity = 1;
+      positionTooltip(tooltip, svg, document.getElementById('chartA-wrap'), x(i), padT + 6);
+      tooltip.innerHTML = `<b>${series[i].key}</b><br>Cumulé : ${fmt(total)}<br>${lines}`;
+    });
+    hit.addEventListener('mouseleave', () => { tooltip.style.opacity = 0; crosshair.setAttribute('opacity', 0); });
+    svg.appendChild(hit);
+
+    renderTableA(series, cum);
+    return;
+  }
+
+  // --- period bars ---
+  const maxTotal = Math.max(1, ...series.map(s => CAT_ORDER.reduce((a, c) => a + (s.cats[c] || 0), 0)));
+  const yMax = maxTotal * 1.12;
+  const step = plotW / n;
+  const bw = Math.max(1.5, Math.min(28, step * 0.72));
+  const y = v => padT + plotH - (v / yMax) * plotH;
+
+  const ticks = 4;
+  for (let t = 0; t <= ticks; t++) {
+    const v = (t / ticks) * yMax;
+    const yy = y(v);
+    svg.appendChild(el('line', { x1: padL, x2: W - padR, y1: yy, y2: yy, class: 'gridline' }));
+    const lbl = el('text', { x: padL - 8, y: yy + 4, class: 'axis-label', 'text-anchor': 'end' });
+    lbl.textContent = fmt(Math.round(v));
+    svg.appendChild(lbl);
+  }
+  svg.appendChild(el('line', { x1: padL, x2: W - padR, y1: padT + plotH, y2: padT + plotH, class: 'baseline-line' }));
+
+  const labelEvery = Math.max(1, Math.ceil(n / (W / 70)));
+
+  series.forEach((s, i) => {
+    const cx = padL + i * step + step / 2;
+    let cursor = padT + plotH;
+    const segs = [];
+    CAT_ORDER.forEach(c => {
+      const v = s.cats[c] || 0;
+      if (v <= 0) return;
+      const h = (v / yMax) * plotH;
+      cursor -= h;
+      segs.push({ c, v, y: cursor, h });
+    });
+    segs.forEach(seg => {
+      svg.appendChild(el('rect', {
+        x: cx - bw / 2, y: seg.y, width: bw, height: Math.max(0, seg.h - 1),
+        fill: CAT_COLOR[seg.c], rx: 2,
+      }));
+    });
+    const hit = el('rect', { x: cx - step / 2, y: padT, width: step, height: plotH, fill: 'transparent' });
+    hit.addEventListener('mousemove', () => {
+      const total = CAT_ORDER.reduce((a, c) => a + (s.cats[c] || 0), 0);
+      const lines = CAT_ORDER.filter(c => s.cats[c]).map(c => `${CAT_LABEL[c]} : ${fmt(s.cats[c])}`).join('<br>');
+      tooltip.style.opacity = 1;
+      positionTooltip(tooltip, svg, document.getElementById('chartA-wrap'), cx, Math.max(padT, cursor));
+      tooltip.innerHTML = `<b>${s.key}</b><br>Total : ${fmt(total)}<br>${lines}`;
+    });
+    hit.addEventListener('mouseleave', () => { tooltip.style.opacity = 0; });
+    svg.appendChild(hit);
+
+    if (i % labelEvery === 0 || i === n - 1) {
+      const lbl = el('text', { x: cx, y: H - 10, class: 'axis-label', 'text-anchor': 'middle' });
+      lbl.textContent = stateA.granularity === 'month' ? s.key : s.key.slice(5).replace('-', '/');
+      svg.appendChild(lbl);
+    }
+  });
+
+  renderTableA(series);
+}
+
+function renderTableA(series, cum) {
+  const table = document.getElementById('tableA');
+  const thead = table.querySelector('thead'), tbody = table.querySelector('tbody');
+  thead.innerHTML = `<tr><th>Période</th>${CAT_ORDER.map(c => `<th>${CAT_LABEL[c]}</th>`).join('')}<th>Total</th></tr>`;
+  tbody.innerHTML = series.map((s, i) => {
+    const row = cum ? cum[i] : s.cats;
+    const total = CAT_ORDER.reduce((a, c) => a + (row[c] || 0), 0);
+    return `<tr><td>${s.key}</td>${CAT_ORDER.map(c => `<td>${fmt(row[c] || 0)}</td>`).join('')}<td><b>${fmt(total)}</b></td></tr>`;
+  }).join('');
+}
+
+/* ---------------- View B: city comparison ---------------- */
+let stateB = { city: null, metric: 'cumulative', windowDays: 120, selected: new Set() };
+
+function populateCitySelect() {
+  const cityCounts = {};
+  EVENTS.forEach(e => { if (e.ville) cityCounts[e.ville] = (cityCounts[e.ville] || 0) + 1; });
+  const cities = Object.keys(cityCounts).filter(c => cityCounts[c] >= 2).sort((a, b) => cityCounts[b] - cityCounts[a]);
+  const sel = document.getElementById('sel-city');
+  sel.innerHTML = cities.map(c => `<option value="${c}">${c} (${cityCounts[c]} éditions)</option>`).join('');
+  stateB.city = cities[0];
+  sel.value = stateB.city;
+  sel.addEventListener('change', () => { stateB.city = sel.value; initEditionSelection(); renderChartB(); });
+}
+
+function editionsForCity(city) {
+  return EVENTS.filter(e => e.ville === city).sort((a, b) => a.date_debut.localeCompare(b.date_debut));
+}
+
+function initEditionSelection() {
+  const eds = editionsForCity(stateB.city);
+  stateB.selected = new Set(eds.slice(-5).map(e => e.id));
+  renderEditionPicker();
+}
+
+function seqColor(index) {
+  return `var(--cat-${(index % 8) + 1})`;
+}
+
+function renderEditionPicker() {
+  const eds = editionsForCity(stateB.city);
+  const container = document.getElementById('edition-picker');
+  container.innerHTML = eds.map((e, i) => {
+    const on = stateB.selected.has(e.id);
+    const color = seqColor(i);
+    const disabled = !on && stateB.selected.size >= 8;
+    return `
+      <label class="edition-chip ${on ? 'on' : ''} ${disabled ? 'disabled' : ''}" data-id="${e.id}">
+        <input type="checkbox" ${on ? 'checked' : ''} ${disabled ? 'disabled' : ''} onchange="toggleEdition('${e.id}')" />
+        <span class="dot" style="background:${color}"></span>
+        ${e.nom.replace(/^Eluceo\s*-\s*/, '').replace(/^Les Rencontres des CSE\s*-\s*/, '')} · ${e.date_debut}
+      </label>`;
+  }).join('');
+}
+function toggleEdition(id) {
+  if (stateB.selected.has(id)) stateB.selected.delete(id);
+  else if (stateB.selected.size < 8) stateB.selected.add(id);
+  renderEditionPicker();
+  renderChartB();
+}
+
+function computeSeriesB() {
+  const eds = editionsForCity(stateB.city).filter(e => stateB.selected.has(e.id));
+  return eds.map(e => {
+    const rows = DAILY.filter(r => r.e === e.id && r.o >= -stateB.windowDays && r.o <= 2);
+    const byOffset = new Map();
+    rows.forEach(r => { byOffset.set(r.o, (byOffset.get(r.o) || 0) + r.n); });
+    const offsets = [...byOffset.keys()].sort((a, b) => a - b);
+    let cum = 0;
+    const points = offsets.map(o => {
+      const v = byOffset.get(o);
+      cum += v;
+      return { o, daily: v, cumulative: cum };
+    });
+    return { event: e, points };
+  });
+}
+
+function renderChartB() {
+  const allSeries = computeSeriesB();
+  const svg = document.getElementById('chartB');
+  const W = 1280, H = 360;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = '';
+  const padL = 56, padR = 20, padT = 14, padB = 34;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+
+  const metricKey = stateB.metric;
+  const allOffsets = allSeries.flatMap(s => s.points.map(p => p.o));
+  if (allOffsets.length === 0) return;
+  const xMin = Math.min(...allOffsets), xMax = Math.max(...allOffsets);
+  const yMax = Math.max(1, ...allSeries.flatMap(s => s.points.map(p => p[metricKey]))) * 1.12;
+
+  const x = o => padL + ((o - xMin) / (xMax - xMin || 1)) * plotW;
+  const y = v => padT + plotH - (v / yMax) * plotH;
+
+  const ns = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs) { const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+  const yTicks = 4;
+  for (let t = 0; t <= yTicks; t++) {
+    const v = (t / yTicks) * yMax;
+    const yy = y(v);
+    svg.appendChild(el('line', { x1: padL, x2: W - padR, y1: yy, y2: yy, class: 'gridline' }));
+    const lbl = el('text', { x: padL - 8, y: yy + 4, class: 'axis-label', 'text-anchor': 'end' });
+    lbl.textContent = fmt(Math.round(v));
+    svg.appendChild(lbl);
+  }
+  // x ticks
+  const xTickCount = 8;
+  for (let t = 0; t <= xTickCount; t++) {
+    const o = Math.round(xMin + (t / xTickCount) * (xMax - xMin));
+    const xx = x(o);
+    const lbl = el('text', { x: xx, y: H - 10, class: 'axis-label', 'text-anchor': 'middle' });
+    lbl.textContent = o === 0 ? 'J' : (o > 0 ? `J+${o}` : `J${o}`);
+    svg.appendChild(lbl);
+  }
+  if (xMin <= 0 && xMax >= 0) {
+    svg.appendChild(el('line', { x1: x(0), x2: x(0), y1: padT, y2: padT + plotH, class: 'baseline-line' }));
+  }
+  svg.appendChild(el('line', { x1: padL, x2: W - padR, y1: padT + plotH, y2: padT + plotH, class: 'baseline-line' }));
+
+  const eds = editionsForCity(stateB.city);
+  const tooltip = document.getElementById('tooltipB');
+  const crosshair = el('line', { class: 'crosshair', y1: padT, y2: padT + plotH });
+
+  allSeries.forEach(s => {
+    if (s.points.length === 0) return;
+    const idx = eds.findIndex(e => e.id === s.event.id);
+    const color = seqColor(idx);
+    let path = '';
+    s.points.forEach((p, i) => {
+      const cmd = i === 0 ? 'M' : 'L';
+      path += `${cmd} ${x(p.o)} ${y(p[metricKey])} `;
+    });
+    svg.appendChild(el('path', { d: path, fill: 'none', stroke: color, 'stroke-width': 2, 'stroke-linecap': 'round' }));
+    const last = s.points[s.points.length - 1];
+    svg.appendChild(el('circle', { cx: x(last.o), cy: y(last[metricKey]), r: 3.5, fill: color }));
+  });
+
+  svg.appendChild(crosshair);
+  const hit = el('rect', { x: padL, y: padT, width: plotW, height: plotH, fill: 'transparent' });
+  hit.addEventListener('mousemove', (ev) => {
+    const rect = svg.getBoundingClientRect();
+    const mx = (ev.clientX - rect.left) * (W / rect.width);
+    const o = Math.round(xMin + ((mx - padL) / plotW) * (xMax - xMin));
+    crosshair.setAttribute('x1', x(o)); crosshair.setAttribute('x2', x(o)); crosshair.setAttribute('opacity', 1);
+    const lines = allSeries.map(s => {
+      const pt = s.points.reduce((best, p) => (best === null || Math.abs(p.o - o) < Math.abs(best.o - o)) ? p : best, null);
+      if (!pt) return '';
+      const idx = eds.findIndex(e => e.id === s.event.id);
+      const color = seqColor(idx);
+      return `<span class="legend-swatch" style="display:inline-block;background:${color}"></span> ${s.event.nom.replace(/^Eluceo\s*-\s*/, '')} : <b>${fmt(pt[metricKey])}</b>`;
+    }).filter(Boolean).join('<br>');
+    tooltip.style.opacity = 1;
+    positionTooltip(tooltip, svg, document.getElementById('chartB-wrap'), x(o), padT + 6);
+    tooltip.innerHTML = `<b>${o === 0 ? 'Jour J' : (o > 0 ? `J+${o}` : `J${o}`)}</b><br>${lines}`;
+  });
+  hit.addEventListener('mouseleave', () => { tooltip.style.opacity = 0; crosshair.setAttribute('opacity', 0); });
+  svg.appendChild(hit);
+}
+
+/* ---------------- View C: campaign comparison ---------------- */
+let stateC = { semester: null, scope: 'all' };
+const FAM_LABEL = { M: 'Mandrill', C: 'Mailchimp', G: 'GAM', X: 'Campagne partenaire', B: 'Badge en ligne', S: 'Salon CSE (digital)', W: 'Web', A: 'Call center', T: 'Site public', P: 'Welcomites (partenaire)', N: 'Non renseigné' };
+const FAM_COLOR = { M: 'var(--s1)', B: 'var(--s2)', G: 'var(--s3)', X: 'var(--s4)', C: 'var(--s5)', S: 'var(--s6)' };
+function famColor(f) { return FAM_COLOR[f] || 'var(--s7)'; }
+
+function populateCampaignSemesterSelect() {
+  const sel = document.getElementById('sel-campaign-semester');
+  const semesters = [...new Set(EVENTS.map(e => e.semestre).filter(Boolean))].sort().reverse();
+  sel.innerHTML = semesters.map(s => `<option value="${s}">${s}</option>`).join('');
+  stateC.semester = semesters[0];
+  sel.value = stateC.semester;
+  sel.addEventListener('change', () => { stateC.semester = sel.value; populateCampaignScopeSelect(); renderChartC(); });
+}
+
+function populateCampaignScopeSelect() {
+  const sel = document.getElementById('sel-campaign-scope');
+  const cities = [...new Set(EVENTS.filter(e => e.semestre === stateC.semester).map(e => e.ville).filter(Boolean))].sort();
+  sel.innerHTML = `<option value="all">Toutes les villes</option>` + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+  stateC.scope = 'all';
+  sel.value = 'all';
+  sel.onchange = () => { stateC.scope = sel.value; renderChartC(); };
+}
+
+function computeCampaignSeries() {
+  const eventIds = new Set(EVENTS.filter(e => e.semestre === stateC.semester && (stateC.scope === 'all' || e.ville === stateC.scope)).map(e => e.id));
+  const totals = new Map(); // camp -> {n, fam}
+  CAMPAIGNS.forEach(r => {
+    if (!eventIds.has(r.e)) return;
+    if (!totals.has(r.camp)) totals.set(r.camp, { n: 0, fam: r.fam });
+    totals.get(r.camp).n += r.n;
+  });
+  return [...totals.entries()].map(([camp, v]) => ({ camp, n: v.n, fam: v.fam })).sort((a, b) => b.n - a.n);
+}
+
+function renderLegendC() {
+  const fams = ['M', 'C', 'G', 'X', 'B', 'S'];
+  document.getElementById('legend-campaigns').innerHTML = fams.map(f => `
+    <div class="legend-item"><span class="legend-swatch" style="background:${famColor(f)}"></span>${FAM_LABEL[f]}</div>
+  `).join('') + `<div class="legend-item"><span class="legend-swatch" style="background:var(--s7)"></span>Autre famille</div>`;
+}
+
+function renderChartC() {
+  const all = computeCampaignSeries();
+  const TOP_N = 20;
+  const top = all.slice(0, TOP_N);
+  const restTotal = all.slice(TOP_N).reduce((a, r) => a + r.n, 0);
+  const rows = restTotal > 0 ? [...top, { camp: `Autres campagnes (${all.length - TOP_N})`, n: restTotal, fam: null }] : top;
+
+  const svg = document.getElementById('chartC');
+  const W = 1280;
+  const rowH = 22, rowGap = 6;
+  const H = Math.max(200, rows.length * (rowH + rowGap) + 50);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('height', H);
+  svg.innerHTML = '';
+  const padL = 230, padR = 70, padT = 10;
+  const plotW = W - padL - padR;
+  const maxV = Math.max(1, ...rows.map(r => r.n));
+
+  const ns = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs) { const e = document.createElementNS(ns, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+  const tooltip = document.getElementById('tooltipC');
+
+  rows.forEach((r, i) => {
+    const yy = padT + i * (rowH + rowGap);
+    const w = (r.n / maxV) * plotW;
+    const label = el('text', { x: padL - 10, y: yy + rowH / 2 + 4, class: 'axis-label', 'text-anchor': 'end' });
+    label.textContent = r.camp;
+    label.setAttribute('font-family', 'var(--font-mono)');
+    svg.appendChild(label);
+
+    const bar = el('rect', { x: padL, y: yy, width: Math.max(2, w), height: rowH, fill: r.fam ? famColor(r.fam) : 'var(--s7)', rx: 3 });
+    svg.appendChild(bar);
+
+    const vlbl = el('text', { x: padL + w + 8, y: yy + rowH / 2 + 4, class: 'axis-label', 'text-anchor': 'start' });
+    vlbl.textContent = fmt(r.n);
+    vlbl.setAttribute('fill', 'var(--ink)');
+    vlbl.setAttribute('font-weight', '650');
+    svg.appendChild(vlbl);
+
+    const hit = el('rect', { x: 0, y: yy, width: W, height: rowH, fill: 'transparent' });
+    hit.addEventListener('mousemove', () => {
+      tooltip.style.opacity = 1;
+      positionTooltip(tooltip, svg, document.getElementById('chartC-wrap'), padL + w, yy);
+      tooltip.innerHTML = `<b>${r.camp}</b><br>${r.fam ? FAM_LABEL[r.fam] + ' · ' : ''}${fmt(r.n)} badges`;
+    });
+    hit.addEventListener('mouseleave', () => { tooltip.style.opacity = 0; });
+    svg.appendChild(hit);
+  });
+
+  renderTableC(all);
+}
+
+function renderTableC(all) {
+  const tbody = document.querySelector('#tableC tbody');
+  tbody.innerHTML = all.map(r => `<tr><td>${r.camp}</td><td>${FAM_LABEL[r.fam] || '—'}</td><td>${fmt(r.n)}</td></tr>`).join('');
+}
+
+/* ---------------- Wiring ---------------- */
+document.getElementById('scope-toggle').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button'); if (!btn) return;
+  stateA.scope = btn.dataset.scope;
+  [...ev.currentTarget.children].forEach(b => b.classList.toggle('active', b === btn));
+  document.getElementById('field-sel-event').style.display = stateA.scope === 'event' ? '' : 'none';
+  document.getElementById('field-sel-semester').style.display = stateA.scope === 'semester' ? '' : 'none';
+  renderChartA();
+});
+document.getElementById('granularity-toggle').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button'); if (!btn) return;
+  stateA.granularity = btn.dataset.g;
+  [...ev.currentTarget.children].forEach(b => b.classList.toggle('active', b === btn));
+  renderChartA();
+});
+document.getElementById('display-toggle').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button'); if (!btn) return;
+  stateA.display = btn.dataset.disp;
+  [...ev.currentTarget.children].forEach(b => b.classList.toggle('active', b === btn));
+  renderChartA();
+});
+document.getElementById('metric-toggle').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button'); if (!btn) return;
+  stateB.metric = btn.dataset.m;
+  [...ev.currentTarget.children].forEach(b => b.classList.toggle('active', b === btn));
+  renderChartB();
+});
+document.getElementById('window-toggle').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button'); if (!btn) return;
+  stateB.windowDays = parseInt(btn.dataset.w, 10);
+  [...ev.currentTarget.children].forEach(b => b.classList.toggle('active', b === btn));
+  renderChartB();
+});
+
+const snapshotDate = DAILY.length ? 'données au ' + new Date().toISOString().slice(0, 10) : '';
+document.getElementById('snapshot-note').textContent = `Photo statique — ${snapshotDate}. À reconnecter à une source live pour un suivi en continu.`;
+
+renderKPIs();
+renderLegendA();
+populateEventSelect();
+populateSemesterSelect();
+renderChartA();
+populateCitySelect();
+initEditionSelection();
+renderChartB();
+populateCampaignSemesterSelect();
+populateCampaignScopeSelect();
+renderLegendC();
+renderChartC();
+</script>
